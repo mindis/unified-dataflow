@@ -37,6 +37,7 @@ import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.java.io.PrimitiveInputFormat;
 import org.apache.flink.api.java.io.TextInputFormat;
 import org.apache.flink.api.java.io.TextValueInputFormat;
+import org.apache.flink.api.java.operators.DataSource;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.typeutils.MissingTypeInfo;
 import org.apache.flink.api.java.typeutils.PojoTypeInfo;
@@ -134,10 +135,19 @@ public abstract class StreamExecutionEnvironment {
 	/** The time characteristic used by the data streams */
 	private TimeCharacteristic timeCharacteristic = DEFAULT_TIME_CHARACTERISTIC;
 
-	
+	/** The extended version of ExecutionEnvironment that will be used in hybrid processing*/
+	private ExtendedExecutionEnvironment extendedExecutionEnvironment ;
+
 	// --------------------------------------------------------------------------------------------
 	// Constructor and Properties
 	// --------------------------------------------------------------------------------------------
+
+	/**
+	 * Gets the unified execution environment.
+	 */
+	public ExtendedExecutionEnvironment getExtendedExecutionEnvironment() {
+		return extendedExecutionEnvironment;
+	}
 
 	/**
 	 * Gets the config object.
@@ -1197,6 +1207,15 @@ public abstract class StreamExecutionEnvironment {
 
 		return new DataStreamSource<OUT>(this, typeInfo, sourceOperator, isParallel, sourceName);
 	}
+	
+	@SafeVarargs
+	public final <OUT> DataSource<OUT> addStaticSourceFromElements(OUT... data ) {
+		return this.getExtendedExecutionEnvironment().fromElements(data);
+	}
+
+
+	
+	
 
 	/**
 	 * Triggers the program execution. The environment will execute all parts of
@@ -1453,5 +1472,18 @@ public abstract class StreamExecutionEnvironment {
 	
 	protected static void resetContextEnvironment() {
 		contextEnvironmentFactory = null;
+	}
+	
+	
+	
+	
+	
+	/**
+	 * This class is used for hybrid tasks that integrates the dataset and datastream processing.
+	 *
+	 */
+	
+	private abstract class ExtendedExecutionEnvironment extends ExecutionEnvironment{
+		
 	}
 }
